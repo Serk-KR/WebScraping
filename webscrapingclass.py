@@ -46,11 +46,22 @@ class WebScraping():
         return categorias
     
     def read_category(self, navmenu):
-        print("Escoger categoria: ")
-        for categories in navmenu:
-            for item_category in categories:    
-                print(item_category[0])
+        print("Escoger categoria: \n")
+        i = 0
+        cat = []
+        for idx1, categories in enumerate(navmenu):
+            for idx2, item_category in enumerate(categories):    
+                print(str(i) + ": " + item_category[0])
+                cat.append(item_category)
+                i+=1
             print("--------")
+        while True:
+            respuesta = int(input("Introduzca el número de la categoría: \n"))
+            if (respuesta >= 0 and respuesta < len(cat)): break
+            print("Error! Categoría no vàlida\n")
+        print("Se ha seleccionado la categoria: " + cat[respuesta][0] + "\n")
+        return cat[respuesta][1]
+        
         
     def get_links_pagination(self, html):
         content = bs(html, 'html.parser')
@@ -76,7 +87,3 @@ class WebScraping():
             productos.append((nombre, precio))
             
         return productos
-        
-    
-    def prueba(self):
-        print("aaa")
