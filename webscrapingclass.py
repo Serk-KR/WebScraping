@@ -8,8 +8,12 @@ Created on Sat Oct 17 19:00:51 2020
 from urllib.request import urlopen
 from bs4 import BeautifulSoup as bs
 
-class WebScraping():
+import sys
 
+class WebScraping():
+    
+    data = []
+    
     def __get_nav_names(self,nav):
         #print("PRINT NAV INICIO: -------")
         #print(nav)
@@ -63,12 +67,29 @@ class WebScraping():
         return cat[respuesta][1]
         
         
-    def get_links_pagination(self, html):
+    def get_links_pagination(self, html, enlaces):
         content = bs(html, 'html.parser')
-        enlaces = []
-        for item in content.select('div.pagination a[href]'):
-            enlaces.append(item.get("href"))
-        return enlaces
+        
+        enlaces_paginas = content.find('div', attrs={'class':'pagination'})
+        enlace_active = enlaces_paginas.find('a', attrs={'class':'active'})
+        
+        if enlace_active is None: #si no hay paginación return []
+            return []
+        else:
+            enlaces.append(enlace_active.get("href")) 
+            
+            nextLink = enlace_active.find_next("a")
+            
+            print(nextLink)
+            
+            if("T" in nextLink.text): #si es la pagina Todo
+                enlaces.append(nextLink.get("href"))
+                return enlaces
+            else:
+                nextLink = self.download_html(nextLink.get("href"))
+                self.get_links_pagination(nextLink, enlaces)
+
+            return enlaces
     
     def get_productos(self, html):
         html = self.download_html(html)
@@ -84,6 +105,19 @@ class WebScraping():
             else:
                 precio = precio.contents[0]
                 
-            productos.append((nombre, precio))
-            
+            productos.append((str(nombre), str(precio)))
+        
+        self.data = productos
+        
         return productos
+    
+    
+    def data2csv(self, filename):
+        
+        self.data = [("Producto", "Precio")] + self.data
+        
+        file = open("./" + filename + ".csv", "w+")
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                file.write(self.data[i][j] + ";")
+            file.write("\n")
