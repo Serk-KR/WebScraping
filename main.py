@@ -5,18 +5,12 @@ Created on Sat Oct 17 13:30:54 2020
 @author: Sergi, Luis
 """
 
-from webscrapingclass import WebScraping
+from webscrapingclass import WebScrapingMustang
 from urllib.request import urlopen
 #from bs4 import BeautifulSoup as bs
 
 #Inicializamos la clase donde que contendrá los métodos necesarios
-ws = WebScraping()
-data = []
-
-def __download_html(url):
-    response = urlopen(url)
-    html = response.read()
-    return html
+ws = WebScrapingMustang()
 
 # Download HTML
 url = "https://www.mustang.es/es/"
@@ -44,19 +38,22 @@ def __menu():
             if (enlaces):
                 while True:
                     respuestaPag = int(input("Introduce una página válida. (Páginas disponibles 1 - " + str(len(enlaces)-1) + ")\n"))
-                    if (respuestaPag < len(enlaces) and 0 < respuestaPag): break
+                    if (respuestaPag < len(enlaces) and 0 < respuestaPag): 
+                        print("Mostramos los productos de la página: " + str(respuestaPag) + "\n")
+                        break
                     print("Error! Página no vàlida\n")
             else: print("Solo hay disponible una única página\n")
             productos = ws.get_productos(enlaces[respuestaPag-1] if enlaces else link_scraping) #primera página
-            #print("Mostramos los productos de la página: " + str(respuestaPag) + "\n")
             print(productos)
         elif (respuesta == 2):
             todos_productos = ws.get_productos(enlaces[len(enlaces) - 1] if enlaces else link_scraping) #ultima página
             print("Mostramos todos productos\n")
             print(todos_productos)
         elif (respuesta == 3):
-            print("guardar data")
-            filename = input("Por favor introducir nombre del fichero")
+            if (not ws.data):
+                print("Para poder guardar los productos en un csv, primero se deben mostrar usando la opción 1 o 2")
+                continue
+            filename = input("Por favor introducir nombre del fichero\n")
             ws.data2csv(filename)
         elif (respuesta == 4):
             return "repetir"
@@ -75,7 +72,6 @@ while True:
     html_category = ws.download_html(link_scraping)
     
     #obtener los enlaces de la paginacion de la categoria
-    enlaces = []
     enlaces = ws.get_links_pagination(html_category, [])
     
     resultado = __menu()

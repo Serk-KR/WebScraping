@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup as bs
 
 import sys
 
-class WebScraping():
+class WebScrapingMustang():
     
     data = []
     
@@ -19,6 +19,7 @@ class WebScraping():
         #print(nav)
         #print("PRINT NAV FIN: -------")
         categorias = []
+        print(len(nav.find_all('li')))
         for idx, ultag in enumerate(nav.find_all('li')):
             if len(ultag.find_all("li")) > 0:
                 #print("Inidice: " + str(idx))
@@ -31,6 +32,7 @@ class WebScraping():
                     itemCategoria.append((categoriaHijo.text, categoriaHijo.find("a").get("href")))
                     #print(" -" +categoriaHijo.text + "-> href: " + str(categoriaHijo.find("a").get("href")))
                 categorias.append(itemCategoria)
+        categorias.pop(); #Quitado último elemento debido a que són url que no tienen productos
         return categorias
     
     def download_html(self, url):
