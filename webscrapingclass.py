@@ -157,11 +157,32 @@ class WebScrapingMustang():
         for enlace in enlacesProductos:
             productos.append(self.__getInfoProduct(enlace)) 
             
-        self.data = productos
+        #self.data = productos
         
         return productos
     
-    
+    def getAllProducts(self, navmenu):
+        
+        linksCategoriaPadre = []
+        self.data = []
+        self.categoria = [""]
+        listcategorias = []
+        
+        for categories in navmenu:
+            listcategorias.append(categories[0][0]) #se guarda todas las categorias
+            linksCategoriaPadre.append(categories[0][2])
+        
+        linksCategoriaPadre.pop()
+        
+        for i, link in enumerate(linksCategoriaPadre):
+            html_category = self.download_html(link)
+            enlaces = self.get_links_pagination(html_category, [])
+            self.categoria[0] = listcategorias[i]
+            todos_productos_categ = self.get_productos(enlaces[len(enlaces) - 1] if enlaces else link) #última página
+            self.data = self.data + todos_productos_categ
+        
+        return self.data
+        
     def data2csv(self, filename):
         self.data = self.header + self.data
         

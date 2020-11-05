@@ -26,10 +26,11 @@ def __menu():
           "- Opción 2: Mostrar todos los productos\n" +
           "- Opción 3: Guardar en formato csv la información de todos los productos\n" + 
           "- Opcion 4: Volver a escoger una categoria\n" +
-          "- Opción 5: Salir\n")
+          "- Opción 5: Volver al menu anterior\n" +
+          "- Opción 6: Salir\n")
         while True:
             respuesta = int(input("Selecciona una opción: \n"))
-            if (0 < respuesta < 6): break
+            if (0 < respuesta < 7): break
             print("Error! Opción no válida\n")
         print("Cargando petición...")
         if (respuesta == 1):
@@ -41,12 +42,12 @@ def __menu():
                         break
                     print("Error! Página no válida\n")
             else: print("Solo hay disponible una única página\n")
-            productos = ws.get_productos(enlaces[respuestaPag-1] if enlaces else link_scraping) #primera página
-            print(productos)
+            ws.data = ws.get_productos(enlaces[respuestaPag-1] if enlaces else link_scraping) #primera página
+            print(ws.data)
         elif (respuesta == 2):
-            todos_productos = ws.get_productos(enlaces[len(enlaces) - 1] if enlaces else link_scraping) #última página
+            ws.data = ws.get_productos(enlaces[len(enlaces) - 1] if enlaces else link_scraping) #última página
             print("Mostramos todos productos\n")
-            print(todos_productos)
+            print(ws.data)
         elif (respuesta == 3):
             if (not ws.data):
                 print("Para poder guardar los productos en un csv, primero se deben mostrar usando la opción 1 o 2")
@@ -55,7 +56,9 @@ def __menu():
             ws.data2csv(filename)
         elif (respuesta == 4):
             return "repetir"
-        else: # #♥respuesta == 5
+        elif (respuesta == 5):
+            return "atras"
+        else: # #♥respuesta == 6
             print("Muchas gracias! Hasta la próxima!\n")    
             return "exit"
 
@@ -63,18 +66,40 @@ def __menu():
 
 
 while True:
-
-    # Entrar categoría que se quiere hacer scraping
-    link_scraping = ws.read_category(navmenu)
     
-    print("Cargando categoria seleccionada...")
-    html_category = ws.download_html(link_scraping)
+    print("Que desea hacer: \n" +
+      "- Opción 1: Mostrar todos los productos\n" +
+      "- Opción 2: Mostrar los productos de categorias\n" +
+      "- Opción 3: Salir\n")
+    while True:
+        respuesta = int(input("Selecciona una opción: \n"))
+        if (0 < respuesta < 4): break
+        print("Error! Opción no válida\n")
+    print("Cargando petición...")
     
-    # Obtener los enlaces de la paginación de la categoria
-    enlaces = ws.get_links_pagination(html_category, [])
-    
-    resultado = __menu()
+    if(respuesta == 1):
+        filename = input("Por favor introducir nombre del fichero\n")
+        print("Esta opción puede tardar unos minutos")
+        productos = ws.getAllProducts(navmenu)
+        ws.data2csv(filename)
+        print(productos)
+        resultado = ""
+    elif(respuesta == 2):
+        # Entrar categoría que se quiere hacer scraping
+        link_scraping = ws.read_category(navmenu)
+        
+        print("Cargando categoria seleccionada...")
+        html_category = ws.download_html(link_scraping)
+        
+        # Obtener los enlaces de la paginación de la categoria
+        enlaces = ws.get_links_pagination(html_category, [])
+        
+        resultado = __menu()
+    else:
+        resultado = "exit"
     
     if(resultado == "exit"):
         break;
+
+        
 
