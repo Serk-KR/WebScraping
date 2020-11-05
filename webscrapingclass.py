@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup as bs
 class WebScrapingMustang():
     
     data = []
+    header = [("Nombre", "Categoria", "Subcategoria", "Color", "Precio", "Venta", "Tallas", "Referencia", "Otros")]
     categoria = []
     
     def __get_nav_names(self,nav):
@@ -83,31 +84,86 @@ class WebScrapingMustang():
 
             return enlaces
     
-    def get_productos(self, html):
+    def __get_links_products(self, html, enlaces):
+        
         html = self.download_html(html)
         content = bs(html, 'html.parser')
+        
+        for a in content.select("a.tag_productImpression"):
+            enlaces.append(a.get("href"))
+        
+        return enlaces
+    
+    def __getInfoProduct(self, html):
+        
+        html = self.download_html(html)
+        content = bs(html, 'html.parser')
+        
+        catPadre = self.categoria[0]
+        
+        titulo_div = content.find('div', attrs={'class':'titulo'}).findChildren("h1")[0].text.strip()
+        titulo_div = titulo_div.split()
+            
+        catHijo = titulo_div[0]
+        
+        nombre = titulo_div[1:len(titulo_div) - 1]
+        nombre = ' '.join(nombre)
+        
+        color = titulo_div[len(titulo_div) - 1] if len(titulo_div) > 2 else "?"
+            
+        try:
+            precio = content.find('div', attrs={'class':'precio'}).findChildren("ins")[0].text.strip()
+        except:
+            precio = "?"
+            nombre = "?"
+        
+        caract_div = content.find('div', attrs={'id':'caracteristica'}).findChildren("ul")
+        caracteriticas = ""
+        for ul in caract_div:
+            for li in ul.findAll("li"):
+                listCaract = li.findChildren("span")
+                info_name = listCaract[0].text.strip()
+                info_value = listCaract[1].text.strip()
+                value = info_name + info_value
+                caracteriticas = caracteriticas +  value + "$"
+        caracteriticas = caracteriticas[:-1]
+        
+        ref_div = content.find('div', attrs={'class':'titulo'}).find("p").contents[0].strip()
+        ref_div = ref_div.split()
+        referencia = ref_div[1]
+        
+        venta = ""
+        
+        tallas_div = content.find('div', attrs={'class':'tdtallas'})
+        tallas = ""
+        if(tallas_div is None):
+            venta = "No"
+            tallas = "?"
+        else:
+            venta = "Si"
+            tallas_div = tallas_div.findChildren("button")
+            for buttonTalla in tallas_div:
+                tallas = tallas + buttonTalla.text.strip() + "-"
+            
+            tallas = tallas[:-1]
+        
+        return (nombre, catPadre, catHijo, color, precio, venta, tallas, referencia, caracteriticas)
+        
+    def get_productos(self, html):
+        
+        enlacesProductos = self.__get_links_products(html, [])
+        
         productos = []
-        for div in content.select("div.meta"):
-            nombre = div.find("span", attrs={"class": "title"}).contents[0]
-            precio = div.find("span", attrs={"class": "precio"})
-            catPadre = self.categoria[0]
-            catHijo = self.categoria[1]
-            if catHijo is None:
-                catHijo = "?"
-            else:
-                catHijo = self.categoria[1]
-            if precio is None:
-                precio = "?"
-            else:
-                precio = precio.contents[0] 
-            productos.append((str(catPadre), str(catHijo), str(nombre), str(precio)))
+        for enlace in enlacesProductos:
+            productos.append(self.__getInfoProduct(enlace)) 
+            
         self.data = productos
         
         return productos
     
     
     def data2csv(self, filename):
-        self.data = [("Categoría", "Subcategoria", "Producto", "Precio")] + self.data
+        self.data = self.header + self.data
         
         file = open("./" + filename + ".csv", "w+")
         for i in range(len(self.data)):
