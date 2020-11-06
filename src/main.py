@@ -48,11 +48,6 @@ def __cleanFile(filename):
     df.replace("", nan_value, inplace=True)
     df.dropna(subset = ["Nombre"], inplace=True)
     
-    #df = df['Nombre'].replace('', np.nan, inplace=True)
-    #df.dropna(subset = ["Nombre"], inplace=True)
-    #df = df.dropna()
-    #df = df[df.Nombre != '']
-    
     #comprovar información del fichero
     # print (df.head())
     # print(df.Categoria.unique())
