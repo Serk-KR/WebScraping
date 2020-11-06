@@ -7,6 +7,7 @@ Created on Sat Oct 17 19:00:51 2020
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup as bs
+import codecs
 
 class WebScrapingMustang():
     
@@ -186,7 +187,7 @@ class WebScrapingMustang():
     def data2csv(self, filename):
         self.data = self.header + self.data
         
-        file = open("./" + filename + ".csv", "w+")
+        file = codecs.open("./" + filename + ".csv", "w+", "utf-8")
         for i in range(len(self.data)):
             for j in range(len(self.data[i])):
                 file.write(self.data[i][j] + ";")

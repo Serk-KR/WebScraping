@@ -8,7 +8,6 @@ Created on Sat Oct 17 13:30:54 2020
 from webscrapingclass import WebScrapingMustang
 
 import pandas as pd
-import numpy as np
 
 #Inicializamos la clase donde que contendrá los métodos necesarios
 ws = WebScrapingMustang()
