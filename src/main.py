@@ -6,7 +6,9 @@ Created on Sat Oct 17 13:30:54 2020
 """
 
 from webscrapingclass import WebScrapingMustang
-from urllib.request import urlopen
+
+import pandas as pd
+import numpy as np
 
 #Inicializamos la clase donde que contendrá los métodos necesarios
 ws = WebScrapingMustang()
@@ -17,6 +19,49 @@ html = ws.download_html(url)
 
 # Get the names and links of navmenu
 navmenu = ws.get_nav_menu(html)
+
+def __cleanFile(filename):
+    
+    #drop the last column    
+    df = pd.read_csv(filename + ".csv", nrows=1, sep=";") # read just first line for columns
+    columns = df.columns.tolist() # get the columns
+    cols_to_use = columns[:len(columns)-1] # drop the last one
+    df = pd.read_csv(filename + ".csv", usecols=cols_to_use, sep=";")
+    
+    #to upper Subcategoria name value
+    df['Subcategoria'] = df['Subcategoria'].str.upper()
+    
+    #replace Subcategoria name value
+    df['Subcategoria'] = df['Subcategoria'].replace(['BOTÍN'],'BOTINES')
+    df['Subcategoria'] = df['Subcategoria'].replace(['BOTIN'],'BOTINES')
+    df['Subcategoria'] = df['Subcategoria'].replace(['BOTA'],'BOTAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['DEPORTIVA'],'DEPORTIVAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['DEPORTIVO'],'DEPORTIVAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['DEPORTIVOS'],'DEPORTIVAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['DPEORTIVA'],'DEPORTIVAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['DEPOTIVA'],'DEPORTIVAS')
+    df['Subcategoria'] = df['Subcategoria'].replace(['ZAPATO'],'ZAPATOS')
+    
+    #delete rows with incorrect values
+    df = df[df.Nombre != '?']
+    
+    nan_value = float("NaN")
+    df.replace("", nan_value, inplace=True)
+    df.dropna(subset = ["Nombre"], inplace=True)
+    
+    #df = df['Nombre'].replace('', np.nan, inplace=True)
+    #df.dropna(subset = ["Nombre"], inplace=True)
+    #df = df.dropna()
+    #df = df[df.Nombre != '']
+    
+    #comprovar información del fichero
+    # print (df.head())
+    # print(df.Categoria.unique())
+    # print(df.Subcategoria.unique())
+    # print(df.Color.unique())
+    
+    df.to_csv(filename + ".csv", sep = ";")
+    
 
 def __menu():
     while True:
@@ -54,8 +99,9 @@ def __menu():
                 continue
             filename = input("Por favor introducir nombre del fichero\n")
             ws.data2csv(filename)
+            __cleanFile(filename)
         elif (respuesta == 4):
-            return "repetir"
+            print("Volver al menu de categoría")
         elif (respuesta == 5):
             return "atras"
         else: # #♥respuesta == 6
@@ -82,6 +128,7 @@ while True:
         print("Esta opción puede tardar unos minutos")
         productos = ws.getAllProducts(navmenu)
         ws.data2csv(filename)
+        __cleanFile(filename)
         print(productos)
         resultado = ""
     elif(respuesta == 2):
@@ -101,5 +148,4 @@ while True:
     if(resultado == "exit"):
         break;
 
-        
 
